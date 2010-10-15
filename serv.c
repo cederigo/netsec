@@ -28,8 +28,8 @@
 /* define HOME to be dir for key and cert files... */
 #define HOME "./"
 /* Make these what you want for cert & key files */
-#define CERTF  HOME "server.crt"
-#define KEYF  HOME  "server.key"
+#define CERTF  HOME "server-cert.pem"
+#define KEYF  HOME  "server-key.pem"
 
 
 #define CHK_NULL(x) if ((x)==NULL) exit (1)
