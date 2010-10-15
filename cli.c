@@ -103,7 +103,7 @@ int main ( int argc, char **argv)
 
   /* Clean up. */
 
-  shutdown (sd,0);
+  close (sd);
   SSL_free (ssl);
   SSL_CTX_free (ctx);
 }
