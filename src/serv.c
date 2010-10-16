@@ -70,7 +70,6 @@ int main (int argc, char **argv)
     ERR_print_errors_fp(stderr);
     exit(4);
   }
-
   if (!SSL_CTX_check_private_key(ctx)) {
     fprintf(stderr,"Private key does not match the certificate public key\n");
     exit(5);

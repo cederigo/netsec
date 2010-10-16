@@ -25,6 +25,12 @@
 #define CHK_ERR(err,s) if ((err)==-1) { perror(s); exit(1); }
 #define CHK_SSL(err) if ((err)==-1) { ERR_print_errors_fp(stderr); exit(2); }
 
+/* define HOME to be dir for key and cert files... */
+#define HOME "./"
+/* Make these what you want for cert & key files */
+#define CERTF  HOME "certs/client-cert.pem"
+#define KEYF   HOME "keys/client-key.pem"
+
 int main ( int argc, char **argv)
 {
   int err;
@@ -37,12 +43,26 @@ int main ( int argc, char **argv)
   char     buf [4096];
   SSL_METHOD *meth;
 
-  SSLeay_add_ssl_algorithms();
-  meth = SSLv2_client_method();
   SSL_load_error_strings();
+  SSLeay_add_ssl_algorithms();
+  meth = SSLv23_client_method();
+  
   ctx = SSL_CTX_new (meth);                        CHK_NULL(ctx);
-
-  CHK_SSL(err);
+  
+  if (SSL_CTX_use_certificate_file(ctx, CERTF, SSL_FILETYPE_PEM) <= 0) {
+    ERR_print_errors_fp(stderr);
+    exit(3);
+    }
+  if (SSL_CTX_use_PrivateKey_file(ctx, KEYF, SSL_FILETYPE_PEM) <= 0) {
+    ERR_print_errors_fp(stderr);
+    exit(4);
+  }
+  if (!SSL_CTX_check_private_key(ctx)) {
+    fprintf(stderr,"Private key does not match the certificate public key\n");
+    exit(5);
+  }
+  
+  
   
   /* ----------------------------------------------- */
   /* Create a socket and connect to server using normal socket calls. */
