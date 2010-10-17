@@ -5,6 +5,9 @@
    Simplified to be even more minimal
    12/98 - 4/99 Wade Scholine <wades@mail.cybg.com> */
 
+/* added client authentication, changed main signature
+   17.10.2010 Cédric Reginster <cederigo@gmail.com> */
+
 #include <stdio.h>
 #include <memory.h>
 #include <errno.h>
@@ -31,6 +34,7 @@
 #define CERTF  HOME "certs/client-cert.pem"
 #define KEYF   HOME "keys/client-key.pem"
 
+
 int main ( int argc, char **argv)
 {
   int err;
@@ -43,11 +47,12 @@ int main ( int argc, char **argv)
   char     buf [4096];
   SSL_METHOD *meth;
 
+  SSL_library_init();
   SSL_load_error_strings();
-  SSLeay_add_ssl_algorithms();
-  meth = SSLv23_client_method();
+  meth = SSLv3_method();
   
   ctx = SSL_CTX_new (meth);                        CHK_NULL(ctx);
+
   
   if (SSL_CTX_use_certificate_file(ctx, CERTF, SSL_FILETYPE_PEM) <= 0) {
     ERR_print_errors_fp(stderr);
@@ -61,7 +66,6 @@ int main ( int argc, char **argv)
     fprintf(stderr,"Private key does not match the certificate public key\n");
     exit(5);
   }
-  
   
   
   /* ----------------------------------------------- */
@@ -92,7 +96,7 @@ int main ( int argc, char **argv)
   printf ("SSL connection using %s\n", SSL_get_cipher (ssl));
   
   /* Get server's certificate (note: beware of dynamic allocation) - opt */
-
+  
   server_cert = SSL_get_peer_certificate (ssl);       CHK_NULL(server_cert);
   printf ("Server certificate:\n");
   
@@ -113,7 +117,7 @@ int main ( int argc, char **argv)
   
   /* --------------------------------------------------- */
   /* DATA EXCHANGE - Send a message and receive a reply. */
-
+    
   err = SSL_write (ssl, "Hello World!", strlen("Hello World!"));  CHK_SSL(err);
   
   err = SSL_read (ssl, buf, sizeof(buf) - 1);                     CHK_SSL(err);

@@ -6,6 +6,9 @@
    Simplified to be even more minimal
    12/98 - 4/99 Wade Scholine <wades@mail.cybg.com> */
 
+/* require client auth. added root cert
+   17.10.2010 Cédric Reginster <cederigo@gmail.com> */
+
 #include <stdio.h>
 #include <unistd.h>
 #include <stdlib.h>
@@ -30,11 +33,12 @@
 /* Make these what you want for cert & key files */
 #define CERTF  HOME "certs/server-cert.pem"
 #define KEYF  HOME  "keys/server-key.pem"
-
+#define CA_LIST HOME "certs/cacert.pem"
 
 #define CHK_NULL(x) if ((x)==NULL) exit (1)
 #define CHK_ERR(err,s) if ((err)==-1) { perror(s); exit(1); }
 #define CHK_SSL(err) if ((err)==-1) { ERR_print_errors_fp(stderr); exit(2); }
+
 
 int main (int argc, char **argv)
 {
@@ -50,12 +54,12 @@ int main (int argc, char **argv)
   char*    str;
   char     buf [4096];
   SSL_METHOD *meth;
-  
-  /* SSL preliminaries. We keep the certificate and key with the context. */
+  struct hostent *he;
 
+  /* SSL preliminaries. We keep the certificate and key with the context. */
+  SSL_library_init();
   SSL_load_error_strings();
-  SSLeay_add_ssl_algorithms();
-  meth = SSLv23_server_method();
+  meth = SSLv3_method();
   ctx = SSL_CTX_new (meth);
   if (!ctx) {
     ERR_print_errors_fp(stderr);
@@ -74,6 +78,17 @@ int main (int argc, char **argv)
     fprintf(stderr,"Private key does not match the certificate public key\n");
     exit(5);
   }
+  
+  /* root cert */
+  if(!(SSL_CTX_load_verify_locations(ctx,CA_LIST,0))){
+    fprintf(stderr,"Can't read CA list\n");
+    exit(6);
+  }
+
+  /* require client auth */
+  SSL_CTX_set_verify(ctx,SSL_VERIFY_PEER |
+          SSL_VERIFY_FAIL_IF_NO_PEER_CERT,0);
+
 
   /* ----------------------------------------------- */
   /* Prepare TCP socket for receiving connections */
@@ -97,8 +112,9 @@ int main (int argc, char **argv)
   CHK_ERR(sd, "accept");
   close (listen_sd);
 
-  printf ("Connection from %lx, port %x\n",
-	  sa_cli.sin_addr.s_addr, sa_cli.sin_port);
+  he = gethostbyaddr(&sa_cli.sin_addr, sizeof sa_cli.sin_addr, AF_INET);
+  printf ("Connection from %s, port %d\n",he->h_name, htons(sa_cli.sin_port));
+
   
   /* ----------------------------------------------- */
   /* TCP connection is ready. Do server side SSL. */
@@ -107,6 +123,7 @@ int main (int argc, char **argv)
   SSL_set_fd (ssl, sd);
   err = SSL_accept (ssl);                        CHK_SSL(err);
   
+  
   /* Get the cipher - opt */
   
   printf ("SSL connection using %s\n", SSL_get_cipher (ssl));
@@ -114,7 +131,9 @@ int main (int argc, char **argv)
   /* Get client's certificate (note: beware of dynamic allocation) - opt */
 
   client_cert = SSL_get_peer_certificate (ssl);
+  
   if (client_cert != NULL) {
+  
     printf ("Client certificate:\n");
     
     str = X509_NAME_oneline (X509_get_subject_name (client_cert), 0, 0);
