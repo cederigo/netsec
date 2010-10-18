@@ -1,5 +1,10 @@
 Exercise for network security lecture
 
+#requirements
+openssl-0.9.8k header files
+(aptitude install libssl-dev on ubuntu)
+
+
 #some links
 http://www.gnu.org/software/gnutls/manual/html_node/TLS-Extension-Handling.html
 http://www.flatmtn.com/article/setting-openssl-create-certificates
