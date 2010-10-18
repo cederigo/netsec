@@ -7,6 +7,7 @@
    12/98 - 4/99 Wade Scholine <wades@mail.cybg.com> */
 
 /* require client auth. added root cert
+   check for helloworld extension in client cert
    17.10.2010 Cédric Reginster <cederigo@gmail.com> */
 
 #include <stdio.h>
@@ -23,6 +24,8 @@
 #include <openssl/rsa.h>       /* SSLeay stuff */
 #include <openssl/crypto.h>
 #include <openssl/x509.h>
+#include <openssl/x509v3.h>
+#include <openssl/objects.h>
 #include <openssl/pem.h>
 #include <openssl/ssl.h>
 #include <openssl/err.h>
@@ -39,20 +42,33 @@
 #define CHK_ERR(err,s) if ((err)==-1) { perror(s); exit(1); }
 #define CHK_SSL(err) if ((err)==-1) { ERR_print_errors_fp(stderr); exit(2); }
 
+int verify_callback(int level, X509_STORE_CTX *ctx){
+  printf("verify_callback\n");
+  /* do nothing here 
+     just return a positive value, could add some logic
+   */
+  return 1;
+
+}
+
 
 int main (int argc, char **argv)
 {
   int err;
   int listen_sd;
   int sd;
+  int nid; /* id for our extension*/
+  int extPos;
   struct sockaddr_in sa_serv;
   struct sockaddr_in sa_cli;
   size_t client_len;
   SSL_CTX* ctx;
   SSL*     ssl;
   X509*    client_cert;
+  X509_EXTENSION *client_extension; /*hello world extension*/ 
   char*    str;
   char     buf [4096];
+  char*    extname;
   SSL_METHOD *meth;
   struct hostent *he;
 
@@ -84,10 +100,10 @@ int main (int argc, char **argv)
     fprintf(stderr,"Can't read CA list\n");
     exit(6);
   }
-
+  
   /* require client auth */
   SSL_CTX_set_verify(ctx,SSL_VERIFY_PEER |
-          SSL_VERIFY_FAIL_IF_NO_PEER_CERT,0);
+        SSL_VERIFY_FAIL_IF_NO_PEER_CERT,verify_callback);
 
 
   /* ----------------------------------------------- */
@@ -145,6 +161,22 @@ int main (int argc, char **argv)
     CHK_NULL(str);
     printf ("\t issuer: %s\n", str);
     OPENSSL_free (str);
+
+    /* get our extension */
+    nid = OBJ_create("1.2.3.4","helloworld","hello world longname");
+    extPos = X509_get_ext_by_NID(client_cert,nid,-1);
+
+    if( extPos == -1 ){
+      printf("\t helloworld extension not found in client certificate\n") ;
+    }else{
+      printf("\t helloworld extension found at position %u\n",extPos);
+      /*get the extension*/
+      client_extension = X509_get_ext(client_cert,extPos);
+      /*just print it for now */
+      err = X509V3_EXT_print_fp(stdout, client_extension,X509V3_EXT_PARSE_UNKNOWN,3); 
+      
+
+    }
     
     /* We could do all sorts of certificate verification stuff here before
        deallocating the certificate. */

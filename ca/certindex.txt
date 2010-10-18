@@ -1,2 +1,9 @@
 V	111016104938Z		100001	unknown	/C=CH/O=cederigo AG/OU=dev/CN=localhost
 V	111016105122Z		100002	unknown	/C=CH/O=cederigo AG/CN=localhost.client
+V	111018100825Z		100003	unknown	/C=CH/O=cederigo AG/CN=testerli
+V	111018103433Z		100004	unknown	/C=CH/O=cederigo AG/CN=test
+V	111018104111Z		100005	unknown	/C=CH/O=cederigo AG/CN=testerli2
+V	111018104618Z		100006	unknown	/C=CH/O=cederigo AG/CN=hihi
+V	111018104904Z		100007	unknown	/C=CH/O=cederigo AG/CN=hihi2
+V	111018105209Z		100008	unknown	/C=CH/O=cederigo AG/CN=guguugugugugug
+V	111018113113Z		100009	unknown	/C=CH/O=cederigo AG/CN=localhost with ext

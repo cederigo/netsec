@@ -22,6 +22,7 @@ email_in_dn				= no
 nameopt					= default_ca
 certopt					= default_ca
 policy					= policy_match
+x509_extensions 			= v3_cert
  
 [ policy_match ]
 countryName				= match
@@ -59,8 +60,9 @@ commonName_max				= 64
 #------------------------	  ------------------------------
 0.organizationName_default		= cederigo AG
 localityName_default			= Bern
-stateOrProvinceName_default		= 
+stateOrProvinceName_default		= Bern 
 countryName_default			= CH
+emailAddress_default			= cederigo@gmail.com
  
 [ v3_ca ]
 basicConstraints			= CA:TRUE
@@ -70,3 +72,8 @@ authorityKeyIdentifier			= keyid:always,issuer:always
 [ v3_req ]
 basicConstraints			= CA:FALSE
 subjectKeyIdentifier			= hash
+
+[ v3_cert ]
+nsCertType 				= client, email
+1.2.3.4					= critical,ASN1:'UTF8:Hello_World_Extension'
+#1.2.3.4					= critical,ASN1:UTF8:Hello_World_Extension
