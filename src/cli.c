@@ -34,6 +34,14 @@
 #define CERTF  HOME "certs/client-cert.pem"
 #define KEYF   HOME "keys/client-key.pem"
 
+/* tls extension*/
+int hello_extension_cb(SSL *s, TLS_EXTENSION * ext, void * arg){
+  printf("hello from tls callback");
+  
+  return 1;
+}
+
+
 
 int main ( int argc, char **argv)
 {
@@ -49,8 +57,7 @@ int main ( int argc, char **argv)
 
   SSL_library_init();
   SSL_load_error_strings();
-  meth = SSLv3_method();
-  
+  meth = TLSv1_client_method();  
   ctx = SSL_CTX_new (meth);                        CHK_NULL(ctx);
 
   
@@ -84,7 +91,12 @@ int main ( int argc, char **argv)
   /* ----------------------------------------------- */
   /* Now we have TCP conncetion. Start SSL negotiation. */
   
-  ssl = SSL_new (ctx);                         CHK_NULL(ssl);    
+  ssl = SSL_new (ctx);                         CHK_NULL(ssl);
+  /* tls extension */
+  //err = SSL_set_hello_extension_cb(ssl,hello_extension_cb, "hello");
+  //CHK_SSL(err);
+  err = SSL_set_hello_extension(ssl,99,"Hello World",strlen("Hello World"));
+  CHK_SSL(err);
   SSL_set_fd (ssl, sd);
   err = SSL_connect (ssl);                     CHK_SSL(err);
     

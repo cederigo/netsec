@@ -41,7 +41,7 @@
 #define CHK_NULL(x) if ((x)==NULL) exit (1)
 #define CHK_ERR(err,s) if ((err)==-1) { perror(s); exit(1); }
 #define CHK_SSL(err) if ((err)==-1) { ERR_print_errors_fp(stderr); exit(2); }
-
+/* for x509 certificat extensions */
 int verify_callback(int level, X509_STORE_CTX *ctx){
   printf("verify_callback\n");
   /* do nothing here 
@@ -50,6 +50,18 @@ int verify_callback(int level, X509_STORE_CTX *ctx){
   return 1;
 
 }
+
+/* tls extension*/
+int hello_extension_cb(SSL *s, TLS_EXTENSION * ext, void * arg){
+  printf("hello from tls callback\n");
+  printf("extension data: %s\n",(char *)ext->data);
+  
+  /* 0 means success, could add some checks here..*/
+  return 0;
+}
+
+
+
 
 
 int main (int argc, char **argv)
@@ -75,7 +87,8 @@ int main (int argc, char **argv)
   /* SSL preliminaries. We keep the certificate and key with the context. */
   SSL_library_init();
   SSL_load_error_strings();
-  meth = SSLv3_method();
+  SSLeay_add_ssl_algorithms();
+  meth = TLSv1_server_method();
   ctx = SSL_CTX_new (meth);
   if (!ctx) {
     ERR_print_errors_fp(stderr);
@@ -103,7 +116,7 @@ int main (int argc, char **argv)
   
   /* require client auth */
   SSL_CTX_set_verify(ctx,SSL_VERIFY_PEER |
-        SSL_VERIFY_FAIL_IF_NO_PEER_CERT,verify_callback);
+    SSL_VERIFY_FAIL_IF_NO_PEER_CERT,verify_callback);
 
 
   /* ----------------------------------------------- */
@@ -136,6 +149,8 @@ int main (int argc, char **argv)
   /* TCP connection is ready. Do server side SSL. */
 
   ssl = SSL_new (ctx);                           CHK_NULL(ssl);
+  /*set tls extension callback here*/
+  SSL_set_hello_extension_cb(ssl,hello_extension_cb, "hello"); 
   SSL_set_fd (ssl, sd);
   err = SSL_accept (ssl);                        CHK_SSL(err);
   

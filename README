@@ -8,4 +8,5 @@ openssl-0.9.8k header files
 #some links
 http://www.gnu.org/software/gnutls/manual/html_node/TLS-Extension-Handling.html
 http://www.flatmtn.com/article/setting-openssl-create-certificates
+http://www.openssl.org/docs/apps/x509v3_config.html#ARBITRARY_EXTENSIONS
 
