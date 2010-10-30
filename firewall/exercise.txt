@@ -1,0 +1,23 @@
+Arbeitsanweisung
+Due 1.11.2010
+groups of two students
+
+- setup three hosts netsec1, netsec2, netsec3 with the following network topology:
+netsec1 ------ netsec2 ------ netsec3
+netsec1 cannot reach netsec3 directly!
+
+- If you use VirtualBox, import the Ubuntu Server image three times and choose “Internal Network” for the networking interface.
+- netsec2 needs two interfaces
+- the network interconnecting netsec1 and netsec2 has to be named differently from the network interconnection netsec2 and netsec3
+- setup the IP addresses and routes, e.g. using ifconfig and route
+- enable IP forwarding on netsec2
+- SUBMIT the appropriate commands
+
+- netsec1 should be able to ping netsec3 via netsec2
+- on netsec3, use iptables to block ICMP traffic from netsec1
+- netsec1 cannot ping netsec3 anymore
+- SUBMIT the appropriate command
+
+- on netsec2, enable NAT (either source NAT, or masquerading) for netsec1 (means: netsec1 is in the private network, netsec3 is in the public network)
+- netsec1 is now able to ping netsec3 again although the rule to drop ICMP traffic from netsec1 is still active
+- SUBMIT the appropriate command

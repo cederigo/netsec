@@ -1,0 +1,28 @@
+#netsec1
+ip link set eth1 up
+ip addr  add 192.168.1.2/24 dev eth1
+ip route add default via 192.168.1.1
+
+
+#netsec2
+ip link set eth1 up
+ip link set eth2 up
+ip addr add 192.168.1.1/24 dev eth1
+ip addr add 192.168.10.1/24 dev eth2
+echo 1 > /proc/sys/net/ipv4/ip_forward
+
+
+#netsec3
+ip link set eth1 up
+ip addr add 192.168.10.2/24 dev eth1
+ip route add default via 192.168.10.1
+
+
+#on netsec3 block icmp traffic from netsec1
+iptables -A INPUT -s 192.168.1.0/24 -p icmp -j DROP
+
+
+#enable nat on netsec3 (eth2) so that ping from netsec1 works again
+iptables -t nat -A POSTROUTING -o eth2 -j MASQUERADE
+
+
