@@ -22,7 +22,7 @@ ip route add default via 192.168.10.1
 iptables -A INPUT -s 192.168.1.0/24 -p icmp -j DROP
 
 
-#enable nat on netsec3 (eth2) so that ping from netsec1 works again
+#enable nat on netsec2 (eth2) so that ping from netsec1 works again
 iptables -t nat -A POSTROUTING -o eth2 -j MASQUERADE
 
 
